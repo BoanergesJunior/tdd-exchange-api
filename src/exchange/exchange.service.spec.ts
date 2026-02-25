@@ -1,29 +1,50 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExchangeService } from './exchange.service';
 import { BadRequestException } from '@nestjs/common';
+import { CurrencyService } from './exchange.service';
 
 describe('ExchangeService', () => {
-  let service: ExchangeService;
+  let exchangeService: ExchangeService;
+  let currencyService: CurrencyService
 
   beforeEach(async () => {
+    const currencyServiceMock = {
+      getCurrency: jest.fn()
+    }
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ExchangeService],
+      providers: [ExchangeService,
+        { provide: CurrencyService, useValue: currencyServiceMock }
+      ],
     }).compile();
 
-    service = module.get<ExchangeService>(ExchangeService);
+    exchangeService = module.get<ExchangeService>(ExchangeService);
+    currencyService = module.get<CurrencyService>(CurrencyService);
+
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(exchangeService).toBeDefined();
   });
 
   describe("convertAmout()", () => {
     it("should throw if called with invalid parameters", async () => {
-      await expect(service.convertAmount({ from: "", to: "", amount: 0 })).rejects.toThrow(new BadRequestException());
+      await expect(exchangeService.convertAmount({ from: "", to: "", amount: 0 })).rejects.toThrow(new BadRequestException());
     })
 
     it("should not throw if called with valid parameters", async () => {
-      await expect(service.convertAmount({ from: "USD", to: "BRL", amount: 100 })).resolves.not.toThrow()
+      await expect(exchangeService.convertAmount({ from: "USD", to: "BRL", amount: 100 })).resolves.not.toThrow()
+    })
+
+    it("should call getCurrecy twice", async () => {
+      await exchangeService.convertAmount({ from: "USD", to: "BRL", amount: 100 })
+      expect(currencyService.getCurrency).toHaveBeenCalledTimes(2)
+    })
+
+    it("should call getCurrecy twice with correct parameters", async () => {
+      await exchangeService.convertAmount({ from: "USD", to: "BRL", amount: 100 })
+      expect(currencyService.getCurrency).toHaveBeenNthCalledWith(1, "USD")
+      expect(currencyService.getCurrency).toHaveBeenNthCalledWith(2, "BRL")
     })
   })
 });

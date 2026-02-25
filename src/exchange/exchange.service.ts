@@ -7,11 +7,20 @@ type ConvertAmountParams = {
 }
 
 @Injectable()
-export class ExchangeService {
+export class CurrencyService {
+  async getCurrency(currency: string): Promise<any> { }
+}
 
-  async convertAmount({ from, to, amount }: ConvertAmountParams) {
+@Injectable()
+export class ExchangeService {
+  constructor(private readonly currencyService: CurrencyService) { }
+
+  async convertAmount({ from, to, amount }: ConvertAmountParams): Promise<any> {
     if (!from || !to || !amount) {
       throw new BadRequestException();
     }
+
+    const fromConverted = await this.currencyService.getCurrency(from)
+    const toConverted = await this.currencyService.getCurrency(to)
   }
 }
