@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExchangeService } from './exchange.service';
+import { BadRequestException } from '@nestjs/common';
 
 describe('ExchangeService', () => {
   let service: ExchangeService;
@@ -18,7 +19,11 @@ describe('ExchangeService', () => {
 
   describe("convertAmout()", () => {
     it("should throw if called with invalid parameters", async () => {
-      await expect(service.convertAmount({ from: "", to: "", amount: 0 })).rejects.toThrow()
+      await expect(service.convertAmount({ from: "", to: "", amount: 0 })).rejects.toThrow(new BadRequestException());
+    })
+
+    it("should not throw if called with valid parameters", async () => {
+      await expect(service.convertAmount({ from: "USD", to: "BRL", amount: 100 })).resolves.not.toThrow()
     })
   })
 });

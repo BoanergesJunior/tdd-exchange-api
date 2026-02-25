@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 type ConvertAmountParams = {
   from: string;
@@ -10,8 +10,8 @@ type ConvertAmountParams = {
 export class ExchangeService {
 
   async convertAmount({ from, to, amount }: ConvertAmountParams) {
-    if (!from || !to || amount <= 0) {
-      throw new Error();
+    if (!from || !to || !amount) {
+      throw new BadRequestException();
     }
   }
 }
